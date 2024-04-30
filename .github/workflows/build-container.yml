@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Get latest angr version
         run: >
-          pip instll --user feedparser
+          pip install --user feedparser
           ANGR_VERSION=$(python -c "import feedparser; print(feedparser.parse('https://pypi.org/rss/project/angr/releases.xml').entries[0].title)")
           echo "ANGR_VERSION=$ANGR_VERSION" >> $GITHUB_ENV
       - name: Build angr docker image
