@@ -1,0 +1,29 @@
+name: Build and publish angr docker image
+
+on:
+  schedule:
+    - cron: '0 19 * * 2' # angr releases at 0 17 * * 2
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Build and publish angr docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Get latest angr version
+        run: >
+          pip instll --user feedparser
+          ANGR_VERSION=$(python -c "import feedparser; print(feedparser.parse('https://pypi.org/rss/project/angr/releases.xml').entries[0].title)")
+          echo "ANGR_VERSION=$ANGR_VERSION" >> $GITHUB_ENV
+      - name: Build angr docker image
+        run: >
+          docker build --build-arg ANGR_VERSION=$ANGR_VERSION -t angr/angr:$ANGR_VERSION .
+          docker tag angr/angr:$ANGR_VERSION angr/angr:latest
+      - name: Login to docker hub
+        run: echo $DOCKER_PASSWORD | docker login -u angrbot --password-stdin
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_API_KEY }}
+      - name: Push angr docker image
+        run: docker push angr/angr:$ANGR_VERSION && docker push angr/angr:latest
