@@ -16,12 +16,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Get latest angr version
-        run: >
+        run: |
           pip install --user feedparser
           ANGR_VERSION=$(python -c "import feedparser; print(feedparser.parse('https://pypi.org/rss/project/angr/releases.xml').entries[0].title)")
           echo "ANGR_VERSION=$ANGR_VERSION" >> $GITHUB_ENV
       - name: Build angr docker image
-        run: >
+        run: |
           docker build --build-arg ANGR_VERSION=$ANGR_VERSION -t angr/angr:$ANGR_VERSION .
           docker tag angr/angr:$ANGR_VERSION angr/angr:latest
       - name: Login to docker hub
