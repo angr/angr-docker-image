@@ -13,6 +13,7 @@ WORKDIR /home/angr
 
 RUN python3 -m venv --prompt angr .venv
 RUN bash -c "source .venv/bin/activate && pip install -U pip"
+RUN bash -c "source .venv/bin/activate && pip install setuptools"  # Required for capstone with pyhton 3.12
 RUN bash -c "source .venv/bin/activate && pip install angr[AngrDB,pcode]==${ANGR_VERSION}"
 RUN echo "source /home/angr/.venv/bin/activate" >> /home/angr/.bashrc
 
