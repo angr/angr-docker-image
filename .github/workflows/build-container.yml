@@ -4,6 +4,22 @@ on:
   schedule:
     - cron: '0 19 * * 2' # angr releases at 0 17 * * 2
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'angr version to build'
+        type: string
+        required: false
+        default: ''
+      push_version:
+        description: 'push the version to docker hub'
+        type: boolean
+        required: true
+        default: false
+      push_latest:
+        description: 'push the latest tag to docker hub'
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   update:
@@ -13,10 +29,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Get latest angr version
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.version == '' }}
         run: |
           pip install --user feedparser
           ANGR_VERSION=$(python -c "import feedparser; print(feedparser.parse('https://pypi.org/rss/project/angr/releases.xml').entries[0].title)")
           echo "ANGR_VERSION=$ANGR_VERSION" >> $GITHUB_ENV
+      - name: Set angr version
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.inputs.version != '' }}
+        run: echo "ANGR_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
       - name: Build angr docker image
         run: |
           docker build --build-arg ANGR_VERSION=$ANGR_VERSION -t angr/angr:$ANGR_VERSION .
@@ -27,5 +47,9 @@ jobs:
         run: echo $DOCKER_PASSWORD | docker login -u angrbot --password-stdin
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_API_KEY }}
-      - name: Push angr docker image
-        run: docker push angr/angr:$ANGR_VERSION && docker push angr/angr:latest
+      - name: Push versioned angr docker image
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.push_version }}
+        run: docker push angr/angr:$ANGR_VERSION
+      - name: Push latest angr docker image
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.push_latest }}
+        run: docker push angr/angr:latest
