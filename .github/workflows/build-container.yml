@@ -21,6 +21,8 @@ jobs:
         run: |
           docker build --build-arg ANGR_VERSION=$ANGR_VERSION -t angr/angr:$ANGR_VERSION .
           docker tag angr/angr:$ANGR_VERSION angr/angr:latest
+      - name: Test angr docker image
+        run: docker run --rm angr/angr:$ANGR_VERSION -- python -c "import angr; print(angr.__version__)"
       - name: Login to docker hub
         run: echo $DOCKER_PASSWORD | docker login -u angrbot --password-stdin
         env:
