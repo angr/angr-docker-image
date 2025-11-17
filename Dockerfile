@@ -13,4 +13,4 @@ RUN echo "source /home/angr/.venv/bin/activate" >> /home/angr/.bashrc
 RUN /home/angr/.venv/bin/pip install -U pip setuptools  # setuptools required for capstone with python 3.12
 
 ARG ANGR_VERSION
-RUN /home/angr/.venv/bin/pip install angr[AngrDB,pcode]==${ANGR_VERSION}
+RUN /home/angr/.venv/bin/pip install angr[AngrDB]==${ANGR_VERSION}
